@@ -60,6 +60,11 @@ To run as amd64. You need to set the default platform to `linux/amd64`:
 ```shell
 export DOCKER_DEFAULT_PLATFORM=linux/amd64
 ```
+### For x86_64/amd64 systems (Linux/Windows)
+The default configuration is set for `linux/amd64`. No changes needed.
+
+### For ARM64 systems (Mac M1/M2, ARM servers)
+If you encounter `exec /bin/tini: exec format error`, you need to change the platform: `platform: ${PLATFORM:-linux/arm64}`
 
 ## 🏂 Usage
 
@@ -165,3 +170,83 @@ curl -X GET "localhost:9200/employees/_search?pretty"
 > - Change the port number if you have modified the `ELASTICSEARCH_HTTP_PORT` in the `.env` file.
 
 ❤️‍🔥 **_Check this branch to see the full example_: [[feat/import-csv-with-logstash/docker-compose](https://github.com/tanhongit/docker-elasticsearch-logstash-kibana/blob/feat/import-csv-with-logstash/logstash/logstash.conf)]** ❤️‍🔥
+
+---
+
+# How to Use the Makefile to Run Spark Tests in Docker
+
+## Overview
+
+This Makefile helps you quickly run Python Spark test scripts inside Docker containers (`spark-master` or `spark-worker`), without remembering the long `docker exec` and `spark-submit` command syntax.
+
+***
+
+## Usage
+
+### 1. Command syntax
+
+```bash
+make run [CONTAINER=<spark-master|spark-worker>] [TEST_FILE=<test_file.py>]
+```
+
+- `CONTAINER` (optional): The name of the Docker container to run the Spark job. Default is `spark-master`.
+- `TEST_FILE` (optional): The name of the Python test file inside `/opt/bitnami/spark/tests` in the container. Default is `test_duplicate_people_names.py`.
+
+***
+
+### 2. Examples
+
+- Run the default test file on the `spark-master` container:
+
+```bash
+make run
+```
+
+- Run `test_employees.py` on the `spark-master` container:
+
+```bash
+make run TEST_FILE=test_employees
+```
+
+- Run the default test on the `spark-worker` container:
+
+```bash
+make run CONTAINER=spark-worker
+```
+
+- Run `test_connections.py` on the `spark-worker` container:
+
+```bash
+make run CONTAINER=spark-worker TEST_FILE=test_connections.py
+```
+
+Ex: (Get file in spark/tests folder)
+
+```bash
+make run CONTAINER=spark-worker TEST_FILE=connections_analysis.py
+make run CONTAINER=spark-worker TEST_FILE=test_duplicate_people_names.py
+make run CONTAINER=spark-worker TEST_FILE=test_employees.py
+make run CONTAINER=spark-worker TEST_FILE=test_name_start_with_text.py
+make run CONTAINER=spark-worker TEST_FILE=test_people.py
+make run CONTAINER=spark-worker TEST_FILE=test_relationship_count_per_user.py
+make run CONTAINER=spark-worker TEST_FILE=test_spark.py
+make run CONTAINER=spark-worker TEST_FILE=test_top_relationships.py
+
+make run CONTAINER=spark-worker TEST_FILE=case/test_employees_case.py
+make run CONTAINER=spark-worker TEST_FILE=case/test_connections_case.py
+make run CONTAINER=spark-worker TEST_FILE=case/test_people_case.py
+
+make run CONTAINER=spark-worker TEST_FILE=case/test_employees_rdd_case.py
+make run CONTAINER=spark-worker TEST_FILE=case/test_connections_rdd_case.py
+```
+
+***
+
+### 3. Workflow
+
+1. Identify running containers using `docker ps`.
+2. Write or update Python test files in the `spark/tests` folder.
+3. Use the `make run` command with appropriate parameters.
+4. Check the test results printed in the terminal.
+
+***
